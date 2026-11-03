@@ -39,12 +39,8 @@ export default function LoginPage() {
             <br />
             Namma Future.
           </h1>
-          <p className="mt-2 text-xl font-semibold text-white/90">
+          <p className="mt-3 max-w-md text-lg text-white/85">
             One source of truth for the entire school.
-          </p>
-          <p className="mt-3 max-w-md text-base text-white/80">
-            One beautiful platform connecting admins, teachers, students &
-            parents.
           </p>
 
           <div className="mt-8 space-y-3">

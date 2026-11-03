@@ -41,13 +41,9 @@ export default function HomePage() {
             Namma Future.
           </span>
         </h1>
-        <p className="mx-auto mt-4 text-xl font-semibold text-slate-800">
-          One source of truth for the entire school.
-        </p>
-        <p className="mx-auto mt-3 max-w-2xl text-lg text-slate-600">
-          One beautiful platform for admins, teachers, students & parents —
-          attendance, fees, and report cards, all in one place.{" "}
-          <span className="font-semibold text-slate-700">
+        <p className="mx-auto mt-5 max-w-2xl text-lg text-slate-600">
+          One source of truth for the entire school.{" "}
+          <span className="font-semibold text-slate-800">
             ನಮ್ಮ ಶಾಲೆ, ನಮ್ಮ ಭವಿಷ್ಯ.
           </span>
         </p>
