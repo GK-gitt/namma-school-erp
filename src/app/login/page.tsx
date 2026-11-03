@@ -29,7 +29,7 @@ export default function LoginPage() {
           </div>
           <div>
             <p className="text-2xl font-extrabold">Namma School ERP</p>
-            <p className="text-sm text-white/80">ನಮ್ಮ ಶಾಲೆ, ನಮ್ಮ ಭವಿಷ್ಯ</p>
+            <p className="text-sm text-white/80">Namma Shaale, Namma Future</p>
           </div>
         </div>
 

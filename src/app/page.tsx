@@ -42,10 +42,7 @@ export default function HomePage() {
           </span>
         </h1>
         <p className="mx-auto mt-5 max-w-2xl text-lg text-slate-600">
-          One source of truth for the entire school.{" "}
-          <span className="font-semibold text-slate-800">
-            ನಮ್ಮ ಶಾಲೆ, ನಮ್ಮ ಭವಿಷ್ಯ.
-          </span>
+          One source of truth for the entire school.
         </p>
 
         <div className="mt-8 flex items-center justify-center gap-4">
