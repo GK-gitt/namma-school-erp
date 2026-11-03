@@ -4,7 +4,7 @@ import { useActionState } from "react";
 import { loginAction } from "./actions";
 import { Logo } from "@/components/logo";
 import {
-  GraduationCap,
+  Bus,
   CalendarCheck,
   Wallet,
   MessageCircle,
@@ -53,12 +53,12 @@ export default function LoginPage() {
               text="Fees & UPI payments, simplified"
             />
             <Feature
-              icon={<MessageCircle size={20} />}
-              text="Report cards & receipts on WhatsApp"
+              icon={<Bus size={20} />}
+              text="Live bus tracking & stop alerts"
             />
             <Feature
-              icon={<GraduationCap size={20} />}
-              text="One login for every role"
+              icon={<MessageCircle size={20} />}
+              text="Everything on WhatsApp — no app needed"
             />
           </div>
         </div>

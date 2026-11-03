@@ -5,7 +5,7 @@ import {
   CalendarCheck,
   Wallet,
   MessageCircle,
-  GraduationCap,
+  Bus,
   ArrowRight,
   HeartPulse,
 } from "lucide-react";
@@ -72,22 +72,22 @@ export default function HomePage() {
         />
         <FeatureCard
           icon={<Wallet />}
-          title="Fees & UPI"
-          desc="One-tap payments. Instant receipts. Zero paperwork."
+          title="Zero-charge Fees"
+          desc="Direct UPI payments with 0% gateway charges. Instant receipts."
           color="text-haldi-dark"
           bg="bg-haldi-50"
         />
         <FeatureCard
-          icon={<MessageCircle />}
-          title="WhatsApp-first"
-          desc="Report cards & receipts shared instantly on WhatsApp."
+          icon={<Bus />}
+          title="Bus Tracking"
+          desc="Live location + 'reaching your stop' alerts for every parent."
           color="text-malnad"
           bg="bg-green-50"
         />
         <FeatureCard
-          icon={<GraduationCap />}
-          title="For Everyone"
-          desc="Role-based access for admins, teachers, students & parents."
+          icon={<MessageCircle />}
+          title="All on WhatsApp"
+          desc="Fees, report cards & bus alerts — no app to download."
           color="text-kesari"
           bg="bg-kesari-50"
         />
