@@ -171,3 +171,22 @@ model FeePayment {
   studentId String
   student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
 }
+
+// ── SCHOOL SETTINGS ────────────────────────────────────────────
+// A single row holding the school's profile/branding. (Single-school
+// for v1; can become multi-school later.) We use a fixed id = "default".
+model SchoolSettings {
+  id            String   @id @default("default")
+  name          String   @default("Namma School")
+  tagline       String?  @default("Namma Shaale, Namma Future")
+  affiliation   String?  @default("CBSE")
+  academicYear  String   @default("2025-2026")
+  address       String?
+  city          String?  @default("Bengaluru")
+  state         String?  @default("Karnataka")
+  phone         String?
+  email         String?
+  website       String?
+  principalName String?
+  updatedAt     DateTime @updatedAt
+}
