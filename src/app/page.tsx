@@ -35,11 +35,11 @@ export default function HomePage() {
           🧡 Built for Bengaluru schools
         </div>
         <h1 className="text-4xl font-extrabold leading-tight tracking-tight text-slate-900 sm:text-5xl">
-          Bringing Every School
+          One source of truth
           <br />
-          Operation{" "}
+          for the{" "}
           <span className="bg-kannada-gradient bg-clip-text text-transparent">
-            Together.
+            entire school.
           </span>
         </h1>
         <p className="mx-auto mt-5 max-w-2xl text-lg text-slate-600">

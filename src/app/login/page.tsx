@@ -35,9 +35,9 @@ export default function LoginPage() {
 
         <div className="relative">
           <h1 className="text-4xl font-extrabold leading-tight">
-            Bringing Every School
+            One source of truth
             <br />
-            Operation Together.
+            for the entire school.
           </h1>
           <p className="mt-3 max-w-md text-lg text-white/85">
             One beautiful platform connecting admins, teachers, students &
