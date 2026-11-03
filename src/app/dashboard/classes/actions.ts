@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { requireRole } from "@/lib/rbac";
+import { requireSchool } from "@/lib/rbac";
 import { classSchema } from "@/lib/validation";
 import { revalidatePath } from "next/cache";
 
@@ -9,7 +9,7 @@ export async function createClass(
   _prev: { error?: string; ok?: boolean } | undefined,
   formData: FormData,
 ): Promise<{ error?: string; ok?: boolean }> {
-  await requireRole(["ADMIN"]);
+  const { schoolId } = await requireSchool(["ADMIN"]);
 
   const parsed = classSchema.safeParse({
     name: formData.get("name"),
@@ -24,8 +24,10 @@ export async function createClass(
 
   const data = parsed.data;
 
+  // Class + section + year is unique WITHIN a school.
   const existing = await prisma.schoolClass.findFirst({
     where: {
+      schoolId,
       name: data.name,
       section: data.section,
       academicYear: data.academicYear,
@@ -35,8 +37,17 @@ export async function createClass(
     return { error: "That class + section already exists for this year." };
   }
 
+  // If a class teacher was chosen, verify they're a TEACHER in THIS school.
+  if (data.classTeacherId) {
+    const teacher = await prisma.user.findFirst({
+      where: { id: data.classTeacherId, schoolId, role: "TEACHER" },
+    });
+    if (!teacher) return { error: "Invalid class teacher selected." };
+  }
+
   await prisma.schoolClass.create({
     data: {
+      schoolId,
       name: data.name,
       section: data.section,
       academicYear: data.academicYear,

@@ -1,13 +1,14 @@
 // Add-student form page. Admin only.
-import { requireRole } from "@/lib/rbac";
+import { requireSchool } from "@/lib/rbac";
 import { prisma } from "@/lib/prisma";
 import { PageTitle } from "@/components/ui";
 import { StudentForm } from "./form";
 
 export default async function NewStudentPage() {
-  await requireRole(["ADMIN"]);
+  const { schoolId } = await requireSchool(["ADMIN"]);
 
   const classes = await prisma.schoolClass.findMany({
+    where: { schoolId },
     orderBy: [{ name: "asc" }, { section: "asc" }],
   });
 

@@ -1,17 +1,18 @@
 // Students list page. Admins + teachers can view.
-import { requireRole } from "@/lib/rbac";
+import { requireSchool } from "@/lib/rbac";
 import { prisma } from "@/lib/prisma";
 import { PageTitle, Table, Badge, LinkButton } from "@/components/ui";
 import { formatDate } from "@/lib/format";
 
 export default async function StudentsPage() {
-  const user = await requireRole(["ADMIN", "TEACHER"]);
+  const { user, schoolId } = await requireSchool(["ADMIN", "TEACHER"]);
 
-  // Teachers only see students in the classes they teach.
+  // Everyone is scoped to their own school. Teachers additionally only see
+  // students in the classes they teach.
   const where =
     user.role === "TEACHER"
-      ? { schoolClass: { classTeacherId: user.id }, isActive: true }
-      : { isActive: true };
+      ? { schoolId, schoolClass: { classTeacherId: user.id }, isActive: true }
+      : { schoolId, isActive: true };
 
   const students = await prisma.student.findMany({
     where,

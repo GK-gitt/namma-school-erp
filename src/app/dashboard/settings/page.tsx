@@ -1,14 +1,12 @@
-// School Settings / profile page — Admin only.
-import { requireRole } from "@/lib/rbac";
+// School Settings / profile page — Admin only, scoped to their own school.
+import { requireSchool } from "@/lib/rbac";
 import { prisma } from "@/lib/prisma";
 import { SettingsForm } from "./form";
 
 export default async function SettingsPage() {
-  await requireRole(["ADMIN"]);
+  const { schoolId } = await requireSchool(["ADMIN"]);
 
-  const settings = await prisma.schoolSettings.findUnique({
-    where: { id: "default" },
-  });
+  const school = await prisma.school.findUnique({ where: { id: schoolId } });
 
   return (
     <>
@@ -22,17 +20,18 @@ export default async function SettingsPage() {
       </div>
       <SettingsForm
         initial={{
-          name: settings?.name ?? "Namma School",
-          tagline: settings?.tagline ?? "Namma Shaale, Namma Future",
-          affiliation: settings?.affiliation ?? "CBSE",
-          academicYear: settings?.academicYear ?? "2025-2026",
-          address: settings?.address ?? "",
-          city: settings?.city ?? "Bengaluru",
-          state: settings?.state ?? "Karnataka",
-          phone: settings?.phone ?? "",
-          email: settings?.email ?? "",
-          website: settings?.website ?? "",
-          principalName: settings?.principalName ?? "",
+          name: school?.name ?? "",
+          tagline: school?.tagline ?? "",
+          affiliation: school?.affiliation ?? "CBSE",
+          academicYear: school?.academicYear ?? "2025-2026",
+          address: school?.address ?? "",
+          city: school?.city ?? "Bengaluru",
+          state: school?.state ?? "Karnataka",
+          phone: school?.phone ?? "",
+          email: school?.email ?? "",
+          website: school?.website ?? "",
+          principalName: school?.principalName ?? "",
+          upiId: school?.upiId ?? "",
         }}
       />
     </>

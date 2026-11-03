@@ -15,6 +15,7 @@ type Settings = {
   email: string;
   website: string;
   principalName: string;
+  upiId: string;
 };
 
 const inputCls =
@@ -59,6 +60,12 @@ export function SettingsForm({ initial }: { initial: Settings }) {
         <Field label="Website" name="website" defaultValue={initial.website} />
         <Field label="City" name="city" defaultValue={initial.city} />
         <Field label="State" name="state" defaultValue={initial.state} />
+        <Field
+          label="UPI ID (for 0%-charge fee collection)"
+          name="upiId"
+          defaultValue={initial.upiId}
+          placeholder="school@okhdfcbank"
+        />
         <div className="sm:col-span-2">
           <label className="block text-sm font-medium text-slate-700">
             Address

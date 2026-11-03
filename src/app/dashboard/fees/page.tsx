@@ -1,25 +1,30 @@
 // Fees module. Admin defines fee structures and records payments.
 // Shows each student's expected fee vs. paid vs. pending.
-import { requireRole } from "@/lib/rbac";
+import { requireSchool } from "@/lib/rbac";
 import { prisma } from "@/lib/prisma";
 import { PageTitle, Card, Table, Badge } from "@/components/ui";
 import { formatINR } from "@/lib/format";
 import { FeeStructureForm, PaymentForm } from "./forms";
 
 export default async function FeesPage() {
-  await requireRole(["ADMIN"]);
+  const { schoolId } = await requireSchool(["ADMIN"]);
 
   const [classes, structures, students, payments] = await Promise.all([
     prisma.schoolClass.findMany({
+      where: { schoolId },
       orderBy: [{ name: "asc" }, { section: "asc" }],
     }),
-    prisma.feeStructure.findMany({ include: { schoolClass: true } }),
+    prisma.feeStructure.findMany({
+      where: { schoolId },
+      include: { schoolClass: true },
+    }),
     prisma.student.findMany({
-      where: { isActive: true },
+      where: { schoolId, isActive: true },
       include: { schoolClass: true, payments: true },
       orderBy: { admissionNo: "asc" },
     }),
     prisma.feePayment.findMany({
+      where: { schoolId },
       include: { student: true },
       orderBy: { paidOn: "desc" },
       take: 10,

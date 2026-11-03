@@ -1,5 +1,6 @@
 // Shared shell for every page under /dashboard — polished sidebar with icons.
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/rbac";
 import { logoutAction } from "./logout-action";
 import { Logo } from "@/components/logo";
@@ -73,6 +74,8 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   const user = await requireUser();
+  // The SaaS owner (SUPER_ADMIN) has no school — send them to the platform console.
+  if (user.role === "SUPER_ADMIN") redirect("/platform");
   const items = NAV.filter((i) => i.roles.includes(user.role));
 
   return (

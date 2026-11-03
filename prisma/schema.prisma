@@ -1,12 +1,11 @@
 // ───────────────────────────────────────────────────────────────
-// SchoolSetu — Database Schema
+// Namma School ERP — Database Schema (MULTI-TENANT SaaS)
 //
-// This file defines the SHAPE of our data: what tables exist, what
-// columns they have, and how they connect. Prisma reads this and
-// creates the real tables in PostgreSQL for us.
+// This is a multi-tenant SaaS: ONE database serves MANY schools, and
+// each school's data is isolated via a `schoolId` on every record.
+// See docs/04-multi-tenancy.md for the full design.
 //
-// Think of each "model" below as a table (like a spreadsheet tab),
-// and each field as a column.
+// Think of each "model" below as a table, and each field as a column.
 // ───────────────────────────────────────────────────────────────
 
 generator client {
@@ -18,8 +17,10 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// The kinds of users in the system. RBAC (role-based access) uses this.
+// Roles. SUPER_ADMIN is the SaaS owner (spans all schools); the rest are
+// scoped to a single school.
 enum Role {
+  SUPER_ADMIN
   ADMIN
   TEACHER
   PARENT
@@ -41,9 +42,46 @@ enum PaymentMode {
   CHEQUE
 }
 
+enum Plan {
+  FREE
+  PRO
+}
+
+// ── SCHOOL (the TENANT) ────────────────────────────────────────
+// Each row is one school using the platform. Everything else belongs
+// to a school via `schoolId`. This is the heart of multi-tenancy.
+model School {
+  id            String   @id @default(cuid())
+  // URL-friendly unique identifier, e.g. "dps-bangalore" (for subdomains later)
+  slug          String   @unique
+  name          String
+  tagline       String?  @default("One source of truth for the entire school")
+  affiliation   String?  @default("CBSE")
+  academicYear  String   @default("2025-2026")
+  address       String?
+  city          String?  @default("Bengaluru")
+  state         String?  @default("Karnataka")
+  phone         String?
+  email         String?
+  website       String?
+  principalName String?
+  upiId         String? // school's own UPI ID for 0%-charge fee collection
+  plan          Plan     @default(FREE)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  users        User[]
+  classes      SchoolClass[]
+  students     Student[]
+  attendance   Attendance[]
+  feeStructure FeeStructure[]
+  payments     FeePayment[]
+}
+
 // ── USERS ──────────────────────────────────────────────────────
-// Everyone who logs in — admin, teacher, parent, student.
-// The password is stored HASHED (scrambled), never as plain text.
+// Everyone who logs in. Belongs to one school (except SUPER_ADMIN, whose
+// schoolId is null). Password stored HASHED, never plain text.
 model User {
   id           String   @id @default(cuid())
   email        String   @unique
@@ -55,24 +93,28 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  // If this user is a teacher, these are the classes they teach.
+  // Tenant link. Null only for SUPER_ADMIN (the SaaS owner).
+  schoolId String?
+  school   School? @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
   teacherOfClasses SchoolClass[] @relation("ClassTeacher")
-  // Attendance records this teacher created.
   markedAttendance Attendance[]  @relation("MarkedBy")
-  // If this user is a parent, these are their children (students).
   children         Student[]     @relation("ParentOfStudent")
-  // If this user IS a student, this links to the student profile.
   studentProfile   Student?      @relation("StudentAccount")
+
+  @@index([schoolId])
 }
 
 // ── SCHOOL CLASS ───────────────────────────────────────────────
-// A class + section, e.g. "Class 5 - A". Indian academic year June–April.
 model SchoolClass {
-  id           String    @id @default(cuid())
-  name         String // e.g. "Class 5"
-  section      String // e.g. "A"
-  academicYear String // e.g. "2025-2026"
-  createdAt    DateTime  @default(now())
+  id           String   @id @default(cuid())
+  name         String
+  section      String
+  academicYear String
+  createdAt    DateTime @default(now())
+
+  schoolId String
+  school   School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
 
   classTeacherId String?
   classTeacher   User?   @relation("ClassTeacher", fields: [classTeacherId], references: [id])
@@ -81,46 +123,49 @@ model SchoolClass {
   attendance   Attendance[]
   feeStructure FeeStructure[]
 
-  // No two sections with the same name in the same academic year.
-  @@unique([name, section, academicYear])
+  // Unique WITHIN a school (two schools can both have "Class 5 - A").
+  @@unique([schoolId, name, section, academicYear])
+  @@index([schoolId])
 }
 
 // ── STUDENT ────────────────────────────────────────────────────
-// The core record. Includes India-specific fields (admission no., blood group).
 model Student {
-  id             String    @id @default(cuid())
-  admissionNo    String    @unique // school's own admission number
-  firstName      String
-  lastName       String
-  dateOfBirth    DateTime
-  gender         String
-  bloodGroup     String?
-  guardianName   String
-  guardianPhone  String
-  address        String?
-  admissionDate  DateTime  @default(now())
-  isActive       Boolean   @default(true)
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  id            String   @id @default(cuid())
+  admissionNo   String
+  firstName     String
+  lastName      String
+  dateOfBirth   DateTime
+  gender        String
+  bloodGroup    String?
+  guardianName  String
+  guardianPhone String
+  address       String?
+  admissionDate DateTime @default(now())
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
-  // Which class the student belongs to.
-  classId String?
+  schoolId String
+  school   School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  classId     String?
   schoolClass SchoolClass? @relation(fields: [classId], references: [id])
 
-  // The parent user account that can view this student.
   parentId String?
   parent   User?   @relation("ParentOfStudent", fields: [parentId], references: [id])
 
-  // Optional: the student's own login account.
   userId String? @unique
   user   User?   @relation("StudentAccount", fields: [userId], references: [id])
 
   attendance Attendance[]
   payments   FeePayment[]
+
+  // Admission number unique WITHIN a school.
+  @@unique([schoolId, admissionNo])
+  @@index([schoolId])
 }
 
 // ── ATTENDANCE ─────────────────────────────────────────────────
-// One row per student per day.
 model Attendance {
   id        String           @id @default(cuid())
   date      DateTime
@@ -128,65 +173,57 @@ model Attendance {
   note      String?
   createdAt DateTime         @default(now())
 
+  schoolId String
+  school   School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
   studentId String
   student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
-  classId String
+  classId     String
   schoolClass SchoolClass @relation(fields: [classId], references: [id])
 
-  // Which teacher marked it (accountability / audit trail).
   markedById String
   markedBy   User   @relation("MarkedBy", fields: [markedById], references: [id])
 
-  // A student can only have ONE attendance record per day.
   @@unique([studentId, date])
+  @@index([schoolId])
 }
 
 // ── FEE STRUCTURE ──────────────────────────────────────────────
-// What a given class is supposed to pay, per term. Amounts in paise? No —
-// we store rupees as Decimal for exactness (never use floats for money).
 model FeeStructure {
-  id          String   @id @default(cuid())
-  title       String // e.g. "Term 1 Tuition Fee"
-  amount      Decimal  @db.Decimal(10, 2)
-  dueDate     DateTime
+  id           String   @id @default(cuid())
+  title        String
+  amount       Decimal  @db.Decimal(10, 2)
+  dueDate      DateTime
   academicYear String
-  createdAt   DateTime @default(now())
+  createdAt    DateTime @default(now())
 
-  classId String
+  schoolId String
+  school   School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  classId     String
   schoolClass SchoolClass @relation(fields: [classId], references: [id])
+
+  @@index([schoolId])
 }
 
 // ── FEE PAYMENT ────────────────────────────────────────────────
-// A record each time a student pays. Many payments can add up over time.
 model FeePayment {
-  id         String      @id @default(cuid())
-  amount     Decimal     @db.Decimal(10, 2)
-  paidOn     DateTime    @default(now())
-  mode       PaymentMode
-  receiptNo  String      @unique
-  note       String?
-  createdAt  DateTime    @default(now())
+  id        String      @id @default(cuid())
+  amount    Decimal     @db.Decimal(10, 2)
+  paidOn    DateTime    @default(now())
+  mode      PaymentMode
+  receiptNo String
+  note      String?
+  createdAt DateTime    @default(now())
+
+  schoolId String
+  school   School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
 
   studentId String
   student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
-}
 
-// ── SCHOOL SETTINGS ────────────────────────────────────────────
-// A single row holding the school's profile/branding. (Single-school
-// for v1; can become multi-school later.) We use a fixed id = "default".
-model SchoolSettings {
-  id            String   @id @default("default")
-  name          String   @default("Namma School")
-  tagline       String?  @default("Namma Shaale, Namma Future")
-  affiliation   String?  @default("CBSE")
-  academicYear  String   @default("2025-2026")
-  address       String?
-  city          String?  @default("Bengaluru")
-  state         String?  @default("Karnataka")
-  phone         String?
-  email         String?
-  website       String?
-  principalName String?
-  updatedAt     DateTime @updatedAt
+  // Receipt number unique WITHIN a school.
+  @@unique([schoolId, receiptNo])
+  @@index([schoolId])
 }

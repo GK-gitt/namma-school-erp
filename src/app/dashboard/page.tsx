@@ -1,5 +1,5 @@
 // Dashboard home — rich, colorful, role-aware with charts & widgets.
-import { requireUser } from "@/lib/rbac";
+import { requireSchool } from "@/lib/rbac";
 import { prisma } from "@/lib/prisma";
 import { formatINR, startOfToday, formatDate } from "@/lib/format";
 import { StatWidget, WidgetCard } from "@/components/widgets";
@@ -14,19 +14,36 @@ import {
 } from "lucide-react";
 
 export default async function DashboardPage() {
-  const user = await requireUser();
+  const { user, schoolId } = await requireSchool();
 
   if (user.role === "ADMIN")
-    return <AdminDashboard name={user.name ?? "Admin"} />;
+    return <AdminDashboard schoolId={schoolId} name={user.name ?? "Admin"} />;
   if (user.role === "TEACHER")
-    return <TeacherDashboard id={user.id} name={user.name ?? "Teacher"} />;
+    return (
+      <TeacherDashboard
+        schoolId={schoolId}
+        id={user.id}
+        name={user.name ?? "Teacher"}
+      />
+    );
   return (
-    <FamilyDashboard id={user.id} role={user.role} name={user.name ?? ""} />
+    <FamilyDashboard
+      schoolId={schoolId}
+      id={user.id}
+      role={user.role}
+      name={user.name ?? ""}
+    />
   );
 }
 
 // ── ADMIN ──────────────────────────────────────────────────────
-async function AdminDashboard({ name }: { name: string }) {
+async function AdminDashboard({
+  schoolId,
+  name,
+}: {
+  schoolId: string;
+  name: string;
+}) {
   const [
     students,
     classes,
@@ -36,25 +53,35 @@ async function AdminDashboard({ name }: { name: string }) {
     allPayments,
     classList,
   ] = await Promise.all([
-    prisma.student.count({ where: { isActive: true } }),
-    prisma.schoolClass.count(),
+    prisma.student.count({ where: { schoolId, isActive: true } }),
+    prisma.schoolClass.count({ where: { schoolId } }),
     prisma.attendance.count({
-      where: { status: "PRESENT", date: { gte: startOfToday() } },
+      where: { schoolId, status: "PRESENT", date: { gte: startOfToday() } },
     }),
-    prisma.feePayment.aggregate({ _sum: { amount: true } }),
-    prisma.feeStructure.aggregate({ _sum: { amount: true } }),
-    prisma.feePayment.aggregate({ _sum: { amount: true } }),
+    prisma.feePayment.aggregate({
+      where: { schoolId },
+      _sum: { amount: true },
+    }),
+    prisma.feeStructure.aggregate({
+      where: { schoolId },
+      _sum: { amount: true },
+    }),
+    prisma.feePayment.aggregate({
+      where: { schoolId },
+      _sum: { amount: true },
+    }),
     prisma.schoolClass.findMany({
+      where: { schoolId },
       include: { _count: { select: { students: true } } },
     }),
   ]);
 
   // Attendance trend for the last 7 days.
-  const trend = await buildAttendanceTrend();
+  const trend = await buildAttendanceTrend(schoolId);
 
   const paid = Number(allPayments._sum.amount ?? 0);
   // Expected = sum of (each class's fee structures total × students in class).
-  const expectedTotal = await computeExpectedTotal();
+  const expectedTotal = await computeExpectedTotal(schoolId);
   const pending = Math.max(expectedTotal - paid, 0);
 
   const classBars = classList.map((c) => ({
@@ -114,9 +141,17 @@ async function AdminDashboard({ name }: { name: string }) {
 }
 
 // ── TEACHER ────────────────────────────────────────────────────
-async function TeacherDashboard({ id, name }: { id: string; name: string }) {
+async function TeacherDashboard({
+  schoolId,
+  id,
+  name,
+}: {
+  schoolId: string;
+  id: string;
+  name: string;
+}) {
   const classes = await prisma.schoolClass.findMany({
-    where: { classTeacherId: id },
+    where: { schoolId, classTeacherId: id },
     include: { _count: { select: { students: true } } },
   });
   const totalStudents = classes.reduce((s, c) => s + c._count.students, 0);
@@ -169,16 +204,19 @@ async function TeacherDashboard({ id, name }: { id: string; name: string }) {
 
 // ── PARENT / STUDENT ──────────────────────────────────────────
 async function FamilyDashboard({
+  schoolId,
   id,
   role,
   name,
 }: {
+  schoolId: string;
   id: string;
   role: string;
   name: string;
 }) {
   const children = await prisma.student.findMany({
-    where: role === "PARENT" ? { parentId: id } : { userId: id },
+    where:
+      role === "PARENT" ? { schoolId, parentId: id } : { schoolId, userId: id },
     include: { schoolClass: true },
   });
 
@@ -226,7 +264,7 @@ function Header({ name, subtitle }: { name: string; subtitle: string }) {
 }
 
 // ── helpers ────────────────────────────────────────────────────
-async function buildAttendanceTrend() {
+async function buildAttendanceTrend(schoolId: string) {
   const days: { day: string; present: number }[] = [];
   for (let i = 6; i >= 0; i--) {
     const d = new Date();
@@ -235,7 +273,7 @@ async function buildAttendanceTrend() {
     const next = new Date(d);
     next.setDate(next.getDate() + 1);
     const present = await prisma.attendance.count({
-      where: { status: "PRESENT", date: { gte: d, lt: next } },
+      where: { schoolId, status: "PRESENT", date: { gte: d, lt: next } },
     });
     days.push({
       day: d.toLocaleDateString("en-IN", { weekday: "short" }),
@@ -245,8 +283,9 @@ async function buildAttendanceTrend() {
   return days;
 }
 
-async function computeExpectedTotal() {
+async function computeExpectedTotal(schoolId: string) {
   const classes = await prisma.schoolClass.findMany({
+    where: { schoolId },
     include: {
       feeStructure: true,
       _count: { select: { students: true } },

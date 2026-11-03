@@ -37,19 +37,21 @@ export const authConfig = {
       // For protected pages, allow only if logged in.
       return isLoggedIn;
     },
-    // Put the role + id into the token so we can check them cheaply later.
+    // Put the role + id + schoolId into the token so we can check them cheaply.
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id as string;
         token.role = (user as { role: Role }).role;
+        token.schoolId = (user as { schoolId: string | null }).schoolId ?? null;
       }
       return token;
     },
-    // Expose role + id on the session object used throughout the app.
+    // Expose role + id + schoolId on the session object used throughout the app.
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string;
         session.user.role = token.role as Role;
+        session.user.schoolId = (token.schoolId as string | null) ?? null;
       }
       return session;
     },

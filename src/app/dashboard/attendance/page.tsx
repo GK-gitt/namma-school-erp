@@ -1,6 +1,6 @@
 // Attendance module. Teacher picks class + date (via URL params),
 // sees the roster with any existing marks, and saves.
-import { requireRole } from "@/lib/rbac";
+import { requireSchool } from "@/lib/rbac";
 import { prisma } from "@/lib/prisma";
 import { PageTitle, Card } from "@/components/ui";
 import { AttendanceSheet } from "./sheet";
@@ -11,12 +11,15 @@ export default async function AttendancePage({
 }: {
   searchParams: Promise<{ classId?: string; date?: string }>;
 }) {
-  const user = await requireRole(["ADMIN", "TEACHER"]);
+  const { user, schoolId } = await requireSchool(["ADMIN", "TEACHER"]);
   const params = await searchParams;
 
-  // Which classes can this user mark?
+  // Which classes can this user mark? Scoped to their own school.
   const classes = await prisma.schoolClass.findMany({
-    where: user.role === "TEACHER" ? { classTeacherId: user.id } : {},
+    where:
+      user.role === "TEACHER"
+        ? { schoolId, classTeacherId: user.id }
+        : { schoolId },
     orderBy: [{ name: "asc" }, { section: "asc" }],
   });
 
@@ -29,7 +32,7 @@ export default async function AttendancePage({
     theDate.setHours(0, 0, 0, 0);
 
     const roster = await prisma.student.findMany({
-      where: { classId: selectedClassId, isActive: true },
+      where: { schoolId, classId: selectedClassId, isActive: true },
       orderBy: { admissionNo: "asc" },
       include: {
         attendance: { where: { date: theDate } },

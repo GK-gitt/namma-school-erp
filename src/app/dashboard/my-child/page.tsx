@@ -1,15 +1,19 @@
 // Parent / Student read-only view. RBAC guarantees they see ONLY their own.
-import { requireRole } from "@/lib/rbac";
+import { requireSchool } from "@/lib/rbac";
 import { prisma } from "@/lib/prisma";
 import { PageTitle, Card, StatCard, Table, Badge } from "@/components/ui";
 import { formatINR, formatDate } from "@/lib/format";
 
 export default async function MyChildPage() {
-  const user = await requireRole(["PARENT", "STUDENT"]);
+  const { user, schoolId } = await requireSchool(["PARENT", "STUDENT"]);
 
   // Critical security line: only fetch students linked to THIS user.
+  // Also scope by schoolId for defense in depth.
   const students = await prisma.student.findMany({
-    where: user.role === "PARENT" ? { parentId: user.id } : { userId: user.id },
+    where:
+      user.role === "PARENT"
+        ? { schoolId, parentId: user.id }
+        : { schoolId, userId: user.id },
     include: {
       schoolClass: { include: { feeStructure: true } },
       attendance: { orderBy: { date: "desc" }, take: 30 },
