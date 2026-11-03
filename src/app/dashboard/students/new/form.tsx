@@ -41,7 +41,7 @@ export function StudentForm({
           <select
             name="gender"
             required
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none"
+            className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-[13px] text-slate-800 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-900/5"
           >
             <option value="Male">Male</option>
             <option value="Female">Female</option>
@@ -64,7 +64,7 @@ export function StudentForm({
           </label>
           <select
             name="classId"
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none"
+            className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-[13px] text-slate-800 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-900/5"
           >
             <option value="">— Unassigned —</option>
             {classes.map((c) => (
@@ -82,12 +82,12 @@ export function StudentForm({
           <textarea
             name="address"
             rows={2}
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none"
+            className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-[13px] text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-slate-400 focus:ring-2 focus:ring-slate-900/5"
           />
         </div>
 
         {state?.error && (
-          <p className="sm:col-span-2 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+          <p className="sm:col-span-2 rounded-lg bg-rose-50 px-3 py-2 text-[13px] text-rose-700 ring-1 ring-inset ring-rose-100">
             {state.error}
           </p>
         )}
@@ -96,7 +96,7 @@ export function StudentForm({
           <button
             type="submit"
             disabled={pending}
-            className="rounded-lg bg-brand px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-dark disabled:opacity-60"
+            className="rounded-lg bg-slate-900 px-5 py-2 text-[13px] font-medium text-white shadow-sm transition hover:bg-slate-800 disabled:opacity-60"
           >
             {pending ? "Saving…" : "Save Student"}
           </button>
@@ -136,7 +136,7 @@ function Field({
         type={type}
         required={required}
         placeholder={placeholder}
-        className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+        className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-[13px] text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-slate-400 focus:ring-2 focus:ring-slate-900/5"
       />
     </div>
   );

@@ -4,7 +4,7 @@ import { useActionState, useRef, useEffect } from "react";
 import { createFeeStructure, recordPayment } from "./actions";
 
 const inputCls =
-  "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none";
+  "w-full rounded-lg border border-slate-200 px-3 py-2 text-[13px] text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-slate-400 focus:ring-2 focus:ring-slate-900/5";
 
 export function FeeStructureForm({
   classes,
@@ -51,7 +51,7 @@ export function FeeStructureForm({
       <button
         type="submit"
         disabled={pending}
-        className="w-full rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-dark disabled:opacity-60"
+        className="w-full rounded-lg bg-slate-900 px-4 py-2 text-[13px] font-medium text-white shadow-sm transition hover:bg-slate-800 disabled:opacity-60"
       >
         {pending ? "Saving…" : "Add Fee Structure"}
       </button>
@@ -105,7 +105,7 @@ export function PaymentForm({
       <button
         type="submit"
         disabled={pending}
-        className="w-full rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-dark disabled:opacity-60"
+        className="w-full rounded-lg bg-slate-900 px-4 py-2 text-[13px] font-medium text-white shadow-sm transition hover:bg-slate-800 disabled:opacity-60"
       >
         {pending ? "Recording…" : "Record Payment"}
       </button>

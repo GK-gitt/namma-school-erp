@@ -1,67 +1,95 @@
-// Rich dashboard widgets — colorful stat cards with icons & trends.
+// Premium B2B SaaS widgets — Linear/Vercel/Stripe aesthetic.
+// Restrained palette, hairline borders, soft shadows, refined typography.
 import type { ReactNode } from "react";
+import { ArrowUpRight, ArrowDownRight } from "lucide-react";
 
-type Tone = "kesari" | "haldi" | "malnad" | "blue";
+type Trend = { value: string; direction: "up" | "down" | "neutral" };
 
-const TONES: Record<Tone, { bg: string; icon: string; ring: string }> = {
-  kesari: { bg: "bg-kesari-50", icon: "text-kesari", ring: "ring-kesari/10" },
-  haldi: { bg: "bg-haldi-50", icon: "text-haldi-dark", ring: "ring-haldi/20" },
-  malnad: { bg: "bg-green-50", icon: "text-malnad", ring: "ring-malnad/10" },
-  blue: { bg: "bg-blue-50", icon: "text-blue-600", ring: "ring-blue-200" },
-};
-
+/**
+ * A high-end metric card. Minimal, data-forward, with an optional trend.
+ * Icon sits in a subtle muted square; the number is the hero.
+ */
 export function StatWidget({
   icon,
   label,
   value,
+  sub,
   trend,
-  tone = "kesari",
 }: {
   icon: ReactNode;
   label: string;
   value: string;
-  trend?: string;
-  tone?: Tone;
+  sub?: string;
+  trend?: Trend;
 }) {
-  const t = TONES[tone];
   return (
-    <div
-      className={`rounded-2xl bg-white p-5 shadow-sm ring-1 ${t.ring} transition hover:-translate-y-0.5 hover:shadow-warm`}
-    >
-      <div className="flex items-start justify-between">
-        <div
-          className={`flex h-11 w-11 items-center justify-center rounded-xl ${t.bg} ${t.icon}`}
-        >
-          {icon}
+    <div className="group rounded-xl border border-slate-200 bg-white p-5 transition-shadow hover:shadow-[0_1px_3px_rgba(0,0,0,0.06),0_8px_24px_-12px_rgba(0,0,0,0.12)]">
+      <div className="flex items-center justify-between">
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-500">
+          <span className="[&>svg]:h-[18px] [&>svg]:w-[18px]">{icon}</span>
         </div>
-        {trend && (
-          <span className="rounded-full bg-malnad/10 px-2 py-0.5 text-xs font-semibold text-malnad">
-            {trend}
-          </span>
+        {trend && <TrendBadge trend={trend} />}
+      </div>
+      <p className="mt-4 text-[13px] font-medium text-slate-500">{label}</p>
+      <div className="mt-1 flex items-baseline gap-2">
+        <p className="text-[28px] font-semibold leading-none tracking-tight text-slate-900">
+          {value}
+        </p>
+        {sub && (
+          <span className="text-xs font-medium text-slate-400">{sub}</span>
         )}
       </div>
-      <p className="mt-4 text-sm font-medium text-slate-500">{label}</p>
-      <p className="mt-1 text-3xl font-extrabold text-slate-900">{value}</p>
     </div>
   );
 }
 
+function TrendBadge({ trend }: { trend: Trend }) {
+  if (trend.direction === "neutral") {
+    return (
+      <span className="rounded-md bg-slate-50 px-1.5 py-0.5 text-[11px] font-medium text-slate-500 ring-1 ring-inset ring-slate-200">
+        {trend.value}
+      </span>
+    );
+  }
+  const up = trend.direction === "up";
+  return (
+    <span
+      className={`inline-flex items-center gap-0.5 rounded-md px-1.5 py-0.5 text-[11px] font-semibold ring-1 ring-inset ${
+        up
+          ? "bg-emerald-50 text-emerald-700 ring-emerald-100"
+          : "bg-rose-50 text-rose-700 ring-rose-100"
+      }`}
+    >
+      {up ? <ArrowUpRight size={11} /> : <ArrowDownRight size={11} />}
+      {trend.value}
+    </span>
+  );
+}
+
+/** A clean container for charts / sections. */
 export function WidgetCard({
   title,
+  subtitle,
   children,
   action,
 }: {
   title: string;
+  subtitle?: string;
   children: ReactNode;
   action?: ReactNode;
 }) {
   return (
-    <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-black/5">
-      <div className="mb-4 flex items-center justify-between">
-        <h3 className="font-bold text-slate-900">{title}</h3>
+    <div className="rounded-xl border border-slate-200 bg-white">
+      <div className="flex items-start justify-between border-b border-slate-100 px-5 py-4">
+        <div>
+          <h3 className="text-sm font-semibold text-slate-900">{title}</h3>
+          {subtitle && (
+            <p className="mt-0.5 text-xs text-slate-400">{subtitle}</p>
+          )}
+        </div>
         {action}
       </div>
-      {children}
+      <div className="p-5">{children}</div>
     </div>
   );
 }

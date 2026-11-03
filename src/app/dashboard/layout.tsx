@@ -1,26 +1,16 @@
-// Shared shell for every page under /dashboard — polished sidebar with icons.
-import Link from "next/link";
+// Dashboard shell — premium B2B SaaS layout (Linear/Vercel/Stripe style).
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/rbac";
 import { logoutAction } from "./logout-action";
+import { SidebarNav } from "./sidebar-nav";
 import { Logo } from "@/components/logo";
 import type { Role } from "@prisma/client";
-import {
-  LayoutDashboard,
-  Users,
-  School,
-  CalendarCheck,
-  Wallet,
-  GraduationCap,
-  Settings,
-  LogOut,
-} from "lucide-react";
 
-type NavItem = {
+export type NavItem = {
   href: string;
   label: string;
   roles: Role[];
-  icon: React.ReactNode;
+  icon: string;
 };
 
 const NAV: NavItem[] = [
@@ -28,43 +18,38 @@ const NAV: NavItem[] = [
     href: "/dashboard",
     label: "Dashboard",
     roles: ["ADMIN", "TEACHER", "PARENT", "STUDENT"],
-    icon: <LayoutDashboard size={18} />,
+    icon: "LayoutDashboard",
   },
   {
     href: "/dashboard/students",
     label: "Students",
     roles: ["ADMIN", "TEACHER"],
-    icon: <Users size={18} />,
+    icon: "Users",
   },
   {
     href: "/dashboard/classes",
     label: "Classes",
     roles: ["ADMIN"],
-    icon: <School size={18} />,
+    icon: "School",
   },
   {
     href: "/dashboard/attendance",
     label: "Attendance",
     roles: ["ADMIN", "TEACHER"],
-    icon: <CalendarCheck size={18} />,
+    icon: "CalendarCheck",
   },
-  {
-    href: "/dashboard/fees",
-    label: "Fees",
-    roles: ["ADMIN"],
-    icon: <Wallet size={18} />,
-  },
+  { href: "/dashboard/fees", label: "Fees", roles: ["ADMIN"], icon: "Wallet" },
   {
     href: "/dashboard/my-child",
     label: "My Child",
     roles: ["PARENT", "STUDENT"],
-    icon: <GraduationCap size={18} />,
+    icon: "GraduationCap",
   },
   {
     href: "/dashboard/settings",
-    label: "School Settings",
+    label: "Settings",
     roles: ["ADMIN"],
-    icon: <Settings size={18} />,
+    icon: "Settings",
   },
 ];
 
@@ -74,63 +59,65 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   const user = await requireUser();
-  // The SaaS owner (SUPER_ADMIN) has no school — send them to the platform console.
   if (user.role === "SUPER_ADMIN") redirect("/platform");
   const items = NAV.filter((i) => i.roles.includes(user.role));
 
   return (
     <div className="flex min-h-screen bg-slate-50">
       {/* Sidebar */}
-      <aside className="flex w-64 flex-col border-r border-slate-200 bg-white">
-        <div className="flex items-center gap-2.5 border-b border-slate-100 px-5 py-5">
-          <Logo size={38} />
-          <div className="leading-tight">
-            <p className="font-extrabold text-slate-900">Namma School</p>
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-kesari">
-              {user.role}
-            </p>
-          </div>
+      <aside className="flex w-60 shrink-0 flex-col border-r border-slate-200 bg-white">
+        {/* Brand */}
+        <div className="flex items-center gap-2.5 px-5 py-4">
+          <Logo size={30} />
+          <span className="text-[15px] font-semibold tracking-tight text-slate-900">
+            Namma School
+          </span>
         </div>
 
-        <nav className="flex-1 space-y-1 px-3 py-4">
-          {items.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-kesari-50 hover:text-kesari"
-            >
-              <span className="text-slate-400 group-hover:text-kesari">
-                {item.icon}
-              </span>
-              {item.label}
-            </Link>
-          ))}
-        </nav>
+        {/* Nav (client component for active-state highlighting) */}
+        <SidebarNav items={items} />
 
-        <div className="border-t border-slate-100 p-4">
-          <div className="mb-3 flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-kannada-gradient text-sm font-bold text-white">
+        {/* User footer */}
+        <div className="border-t border-slate-100 p-3">
+          <div className="flex items-center gap-2.5 rounded-lg px-2 py-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-xs font-semibold text-white">
               {(user.name ?? "U").charAt(0)}
             </div>
-            <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-slate-700">
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-[13px] font-medium text-slate-800">
                 {user.name}
               </p>
-              <p className="truncate text-xs text-slate-400">{user.email}</p>
+              <p className="truncate text-[11px] text-slate-400">
+                {user.email}
+              </p>
             </div>
           </div>
-          <form action={logoutAction}>
+          <form action={logoutAction} className="mt-1">
             <button
               type="submit"
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-kesari-50 hover:text-kesari"
+              className="w-full rounded-lg px-3 py-2 text-left text-[13px] font-medium text-slate-500 transition hover:bg-slate-50 hover:text-slate-900"
             >
-              <LogOut size={16} /> Log out
+              Sign out
             </button>
           </form>
         </div>
       </aside>
 
-      <main className="flex-1 overflow-y-auto p-6 lg:p-8">{children}</main>
+      {/* Main */}
+      <div className="flex min-w-0 flex-1 flex-col">
+        {/* Top bar */}
+        <header className="flex h-14 items-center justify-between border-b border-slate-200 bg-white/80 px-8 backdrop-blur">
+          <span className="text-[11px] font-medium uppercase tracking-wider text-slate-400">
+            {user.role === "ADMIN"
+              ? "Administrator"
+              : user.role.charAt(0) + user.role.slice(1).toLowerCase()}
+          </span>
+          <span className="rounded-md bg-slate-50 px-2 py-1 text-[11px] font-medium text-slate-500 ring-1 ring-inset ring-slate-200">
+            Namma Demo School
+          </span>
+        </header>
+        <main className="flex-1 overflow-y-auto px-8 py-7">{children}</main>
+      </div>
     </div>
   );
 }

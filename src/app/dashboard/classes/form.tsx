@@ -28,24 +28,24 @@ export function ClassForm({
           name="name"
           placeholder="Class (e.g. Class 5)"
           required
-          className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none"
+          className="rounded-lg border border-slate-200 px-3 py-2 text-[13px] text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-slate-400 focus:ring-2 focus:ring-slate-900/5"
         />
         <input
           name="section"
           placeholder="Section (e.g. A)"
           required
-          className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none"
+          className="rounded-lg border border-slate-200 px-3 py-2 text-[13px] text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-slate-400 focus:ring-2 focus:ring-slate-900/5"
         />
         <input
           name="academicYear"
           placeholder="2025-2026"
           defaultValue="2025-2026"
           required
-          className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none"
+          className="rounded-lg border border-slate-200 px-3 py-2 text-[13px] text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-slate-400 focus:ring-2 focus:ring-slate-900/5"
         />
         <select
           name="classTeacherId"
-          className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none"
+          className="rounded-lg border border-slate-200 px-3 py-2 text-[13px] text-slate-800 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-900/5"
         >
           <option value="">— Class teacher —</option>
           {teachers.map((t) => (
@@ -57,7 +57,7 @@ export function ClassForm({
         <button
           type="submit"
           disabled={pending}
-          className="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-dark disabled:opacity-60"
+          className="rounded-lg bg-slate-900 px-4 py-2 text-[13px] font-medium text-white shadow-sm transition hover:bg-slate-800 disabled:opacity-60"
         >
           {pending ? "Adding…" : "Add"}
         </button>

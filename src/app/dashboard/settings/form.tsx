@@ -19,7 +19,7 @@ type Settings = {
 };
 
 const inputCls =
-  "mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none transition focus:border-kesari focus:ring-2 focus:ring-kesari/20";
+  "mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-[13px] text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-slate-400 focus:ring-2 focus:ring-slate-900/5";
 
 export function SettingsForm({ initial }: { initial: Settings }) {
   const [state, action, pending] = useActionState(saveSettings, {});
@@ -79,13 +79,13 @@ export function SettingsForm({ initial }: { initial: Settings }) {
         </div>
 
         {state?.error && (
-          <p className="sm:col-span-2 rounded-xl bg-kesari-50 px-3 py-2 text-sm text-kesari-dark">
+          <p className="sm:col-span-2 rounded-lg bg-rose-50 px-3 py-2 text-[13px] text-rose-700 ring-1 ring-inset ring-rose-100">
             {state.error}
           </p>
         )}
         {state?.ok && (
-          <p className="sm:col-span-2 rounded-xl bg-green-50 px-3 py-2 text-sm text-malnad">
-            ✓ Settings saved!
+          <p className="sm:col-span-2 rounded-lg bg-emerald-50 px-3 py-2 text-[13px] text-emerald-700 ring-1 ring-inset ring-emerald-100">
+            ✓ Settings saved
           </p>
         )}
 
@@ -93,9 +93,9 @@ export function SettingsForm({ initial }: { initial: Settings }) {
           <button
             type="submit"
             disabled={pending}
-            className="rounded-xl bg-kannada-gradient px-6 py-2.5 text-sm font-bold text-white shadow-warm transition hover:opacity-95 disabled:opacity-60"
+            className="rounded-lg bg-slate-900 px-5 py-2 text-[13px] font-medium text-white shadow-sm transition hover:bg-slate-800 disabled:opacity-60"
           >
-            {pending ? "Saving…" : "Save Settings"}
+            {pending ? "Saving…" : "Save changes"}
           </button>
         </div>
       </form>

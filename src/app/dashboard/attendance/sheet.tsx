@@ -53,7 +53,7 @@ export function AttendanceSheet({
             <select
               value={selectedClassId}
               onChange={(e) => navigate(e.target.value, selectedDate)}
-              className="mt-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none"
+              className="mt-1 rounded-lg border border-slate-200 px-3 py-2 text-[13px] text-slate-800 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-900/5"
             >
               {classes.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -70,7 +70,7 @@ export function AttendanceSheet({
               type="date"
               value={selectedDate}
               onChange={(e) => navigate(selectedClassId, e.target.value)}
-              className="mt-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none"
+              className="mt-1 rounded-lg border border-slate-200 px-3 py-2 text-[13px] text-slate-800 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-900/5"
             />
           </div>
         </div>
@@ -125,7 +125,7 @@ export function AttendanceSheet({
               <button
                 type="submit"
                 disabled={pending}
-                className="rounded-lg bg-brand px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-dark disabled:opacity-60"
+                className="rounded-lg bg-slate-900 px-5 py-2 text-[13px] font-medium text-white shadow-sm transition hover:bg-slate-800 disabled:opacity-60"
               >
                 {pending ? "Saving…" : "Save Attendance"}
               </button>

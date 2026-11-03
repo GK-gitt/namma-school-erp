@@ -1,4 +1,4 @@
-// Dashboard home — rich, colorful, role-aware with charts & widgets.
+// Dashboard — premium B2B SaaS aesthetic (Linear/Vercel/Stripe style).
 import { requireSchool } from "@/lib/rbac";
 import { prisma } from "@/lib/prisma";
 import { formatINR, startOfToday, formatDate } from "@/lib/format";
@@ -6,11 +6,11 @@ import { StatWidget, WidgetCard } from "@/components/widgets";
 import { AttendanceTrend, FeeDonut, ClassBars } from "@/components/charts";
 import {
   Users,
-  School,
-  CheckCircle2,
-  Wallet,
-  CalendarDays,
   GraduationCap,
+  CalendarCheck,
+  Percent,
+  School,
+  CalendarDays,
 } from "lucide-react";
 
 export default async function DashboardPage() {
@@ -47,24 +47,16 @@ async function AdminDashboard({
   const [
     students,
     classes,
+    activeStudents,
     todayPresent,
-    totalCollected,
-    allStructures,
-    allPayments,
+    totalPaid,
     classList,
   ] = await Promise.all([
     prisma.student.count({ where: { schoolId, isActive: true } }),
     prisma.schoolClass.count({ where: { schoolId } }),
+    prisma.student.count({ where: { schoolId, isActive: true } }),
     prisma.attendance.count({
       where: { schoolId, status: "PRESENT", date: { gte: startOfToday() } },
-    }),
-    prisma.feePayment.aggregate({
-      where: { schoolId },
-      _sum: { amount: true },
-    }),
-    prisma.feeStructure.aggregate({
-      where: { schoolId },
-      _sum: { amount: true },
     }),
     prisma.feePayment.aggregate({
       where: { schoolId },
@@ -76,13 +68,14 @@ async function AdminDashboard({
     }),
   ]);
 
-  // Attendance trend for the last 7 days.
   const trend = await buildAttendanceTrend(schoolId);
-
-  const paid = Number(allPayments._sum.amount ?? 0);
-  // Expected = sum of (each class's fee structures total × students in class).
+  const paid = Number(totalPaid._sum.amount ?? 0);
   const expectedTotal = await computeExpectedTotal(schoolId);
   const pending = Math.max(expectedTotal - paid, 0);
+  const collectionRate =
+    expectedTotal > 0 ? Math.round((paid / expectedTotal) * 100) : 0;
+  const attendanceRate =
+    activeStudents > 0 ? Math.round((todayPresent / activeStudents) * 100) : 0;
 
   const classBars = classList.map((c) => ({
     name: `${c.name.replace("Class ", "")}-${c.section}`,
@@ -91,48 +84,54 @@ async function AdminDashboard({
 
   return (
     <>
-      <Header name={name} subtitle="Here's your school today" />
+      <Header name={name} subtitle="School overview" />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatWidget
           icon={<Users />}
-          label="Active Students"
+          label="Total Students"
           value={String(students)}
-          tone="kesari"
+          trend={{ value: "Active", direction: "neutral" }}
         />
         <StatWidget
-          icon={<School />}
-          label="Classes"
-          value={String(classes)}
-          tone="haldi"
+          icon={<Percent />}
+          label="Fee Collection Rate"
+          value={`${collectionRate}%`}
+          sub={formatINR(paid)}
+          trend={{
+            value: `${collectionRate}%`,
+            direction: collectionRate >= 60 ? "up" : "down",
+          }}
         />
         <StatWidget
-          icon={<CheckCircle2 />}
-          label="Present Today"
-          value={String(todayPresent)}
-          tone="malnad"
+          icon={<CalendarCheck />}
+          label="Today's Attendance"
+          value={`${attendanceRate}%`}
+          sub={`${todayPresent}/${activeStudents}`}
+          trend={{
+            value: `${attendanceRate}%`,
+            direction: attendanceRate >= 75 ? "up" : "down",
+          }}
         />
-        <StatWidget
-          icon={<Wallet />}
-          label="Fees Collected"
-          value={formatINR(Number(totalCollected._sum.amount ?? 0))}
-          tone="blue"
-        />
+        <StatWidget icon={<School />} label="Classes" value={String(classes)} />
       </div>
 
-      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-3">
         <div className="lg:col-span-2">
-          <WidgetCard title="📈 Attendance — last 7 days">
+          <WidgetCard
+            title="Attendance"
+            subtitle="Present students, last 7 days"
+          >
             <AttendanceTrend data={trend} />
           </WidgetCard>
         </div>
-        <WidgetCard title="💰 Fee Collection">
+        <WidgetCard title="Fee Collection" subtitle="Collected vs pending">
           <FeeDonut paid={paid} pending={pending} />
         </WidgetCard>
       </div>
 
-      <div className="mt-6">
-        <WidgetCard title="🏫 Students per class">
+      <div className="mt-4">
+        <WidgetCard title="Enrollment" subtitle="Students per class">
           <ClassBars data={classBars} />
         </WidgetCard>
       </div>
@@ -158,32 +157,29 @@ async function TeacherDashboard({
 
   return (
     <>
-      <Header name={name} subtitle="Your classes at a glance" />
+      <Header name={name} subtitle="Your classes" />
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <StatWidget
           icon={<School />}
           label="My Classes"
           value={String(classes.length)}
-          tone="kesari"
         />
         <StatWidget
           icon={<Users />}
           label="My Students"
           value={String(totalStudents)}
-          tone="haldi"
         />
         <StatWidget
           icon={<CalendarDays />}
           label="Today"
           value={formatDate(new Date())}
-          tone="malnad"
         />
       </div>
-      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {classes.length === 0 ? (
-          <WidgetCard title="No classes yet">
+          <WidgetCard title="No classes assigned">
             <p className="text-sm text-slate-500">
-              You are not assigned as class teacher to any class yet.
+              You are not a class teacher for any class yet.
             </p>
           </WidgetCard>
         ) : (
@@ -191,9 +187,9 @@ async function TeacherDashboard({
             <StatWidget
               key={c.id}
               icon={<GraduationCap />}
-              label={`${c.name} - ${c.section}`}
-              value={`${c._count.students} students`}
-              tone="blue"
+              label={`${c.name} · ${c.section}`}
+              value={`${c._count.students}`}
+              sub="students"
             />
           ))
         )}
@@ -222,7 +218,7 @@ async function FamilyDashboard({
 
   return (
     <>
-      <Header name={name} subtitle="Your family overview" />
+      <Header name={name} subtitle="Family overview" />
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {children.length === 0 ? (
           <WidgetCard title="No student linked">
@@ -239,10 +235,10 @@ async function FamilyDashboard({
               label={`${s.firstName} ${s.lastName}`}
               value={
                 s.schoolClass
-                  ? `${s.schoolClass.name} - ${s.schoolClass.section}`
+                  ? `${s.schoolClass.name} · ${s.schoolClass.section}`
                   : "Unassigned"
               }
-              tone="kesari"
+              sub={`Adm. ${s.admissionNo}`}
             />
           ))
         )}
@@ -255,10 +251,10 @@ async function FamilyDashboard({
 function Header({ name, subtitle }: { name: string; subtitle: string }) {
   return (
     <div className="mb-6">
-      <h1 className="text-2xl font-extrabold text-slate-900">
-        Welcome back, {name.split(" ")[0]}! 👋
+      <h1 className="text-xl font-semibold tracking-tight text-slate-900">
+        Welcome back, {name.split(" ")[0]}
       </h1>
-      <p className="mt-1 text-sm text-slate-500">{subtitle}</p>
+      <p className="mt-0.5 text-sm text-slate-500">{subtitle}</p>
     </div>
   );
 }
