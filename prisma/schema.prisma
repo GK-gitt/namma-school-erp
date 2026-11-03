@@ -1,0 +1,173 @@
+// ───────────────────────────────────────────────────────────────
+// SchoolSetu — Database Schema
+//
+// This file defines the SHAPE of our data: what tables exist, what
+// columns they have, and how they connect. Prisma reads this and
+// creates the real tables in PostgreSQL for us.
+//
+// Think of each "model" below as a table (like a spreadsheet tab),
+// and each field as a column.
+// ───────────────────────────────────────────────────────────────
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// The kinds of users in the system. RBAC (role-based access) uses this.
+enum Role {
+  ADMIN
+  TEACHER
+  PARENT
+  STUDENT
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  LEAVE
+}
+
+enum PaymentMode {
+  CASH
+  UPI
+  CARD
+  NETBANKING
+  CHEQUE
+}
+
+// ── USERS ──────────────────────────────────────────────────────
+// Everyone who logs in — admin, teacher, parent, student.
+// The password is stored HASHED (scrambled), never as plain text.
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  role         Role
+  phone        String?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // If this user is a teacher, these are the classes they teach.
+  teacherOfClasses SchoolClass[] @relation("ClassTeacher")
+  // Attendance records this teacher created.
+  markedAttendance Attendance[]  @relation("MarkedBy")
+  // If this user is a parent, these are their children (students).
+  children         Student[]     @relation("ParentOfStudent")
+  // If this user IS a student, this links to the student profile.
+  studentProfile   Student?      @relation("StudentAccount")
+}
+
+// ── SCHOOL CLASS ───────────────────────────────────────────────
+// A class + section, e.g. "Class 5 - A". Indian academic year June–April.
+model SchoolClass {
+  id           String    @id @default(cuid())
+  name         String // e.g. "Class 5"
+  section      String // e.g. "A"
+  academicYear String // e.g. "2025-2026"
+  createdAt    DateTime  @default(now())
+
+  classTeacherId String?
+  classTeacher   User?   @relation("ClassTeacher", fields: [classTeacherId], references: [id])
+
+  students     Student[]
+  attendance   Attendance[]
+  feeStructure FeeStructure[]
+
+  // No two sections with the same name in the same academic year.
+  @@unique([name, section, academicYear])
+}
+
+// ── STUDENT ────────────────────────────────────────────────────
+// The core record. Includes India-specific fields (admission no., blood group).
+model Student {
+  id             String    @id @default(cuid())
+  admissionNo    String    @unique // school's own admission number
+  firstName      String
+  lastName       String
+  dateOfBirth    DateTime
+  gender         String
+  bloodGroup     String?
+  guardianName   String
+  guardianPhone  String
+  address        String?
+  admissionDate  DateTime  @default(now())
+  isActive       Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  // Which class the student belongs to.
+  classId String?
+  schoolClass SchoolClass? @relation(fields: [classId], references: [id])
+
+  // The parent user account that can view this student.
+  parentId String?
+  parent   User?   @relation("ParentOfStudent", fields: [parentId], references: [id])
+
+  // Optional: the student's own login account.
+  userId String? @unique
+  user   User?   @relation("StudentAccount", fields: [userId], references: [id])
+
+  attendance Attendance[]
+  payments   FeePayment[]
+}
+
+// ── ATTENDANCE ─────────────────────────────────────────────────
+// One row per student per day.
+model Attendance {
+  id        String           @id @default(cuid())
+  date      DateTime
+  status    AttendanceStatus
+  note      String?
+  createdAt DateTime         @default(now())
+
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  classId String
+  schoolClass SchoolClass @relation(fields: [classId], references: [id])
+
+  // Which teacher marked it (accountability / audit trail).
+  markedById String
+  markedBy   User   @relation("MarkedBy", fields: [markedById], references: [id])
+
+  // A student can only have ONE attendance record per day.
+  @@unique([studentId, date])
+}
+
+// ── FEE STRUCTURE ──────────────────────────────────────────────
+// What a given class is supposed to pay, per term. Amounts in paise? No —
+// we store rupees as Decimal for exactness (never use floats for money).
+model FeeStructure {
+  id          String   @id @default(cuid())
+  title       String // e.g. "Term 1 Tuition Fee"
+  amount      Decimal  @db.Decimal(10, 2)
+  dueDate     DateTime
+  academicYear String
+  createdAt   DateTime @default(now())
+
+  classId String
+  schoolClass SchoolClass @relation(fields: [classId], references: [id])
+}
+
+// ── FEE PAYMENT ────────────────────────────────────────────────
+// A record each time a student pays. Many payments can add up over time.
+model FeePayment {
+  id         String      @id @default(cuid())
+  amount     Decimal     @db.Decimal(10, 2)
+  paidOn     DateTime    @default(now())
+  mode       PaymentMode
+  receiptNo  String      @unique
+  note       String?
+  createdAt  DateTime    @default(now())
+
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}

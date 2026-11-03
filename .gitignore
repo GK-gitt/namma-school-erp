@@ -1,0 +1,38 @@
+# Dependencies
+/node_modules
+
+# Next.js build output
+/.next/
+/out/
+next-env.d.ts
+
+# Production
+/build
+
+# Environment variables — NEVER commit real secrets!
+.env
+.env*.local
+.env.production
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS / editor junk
+.DS_Store
+*.pem
+.vscode/
+.idea/
+
+# Prisma
+/prisma/*.db
+
+# Vercel
+.vercel
+
+# TypeScript
+*.tsbuildinfo
+
+# Kiro sandbox internal settings (not part of the app)
+.kiro/
