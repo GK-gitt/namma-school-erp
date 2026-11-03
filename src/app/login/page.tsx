@@ -40,8 +40,8 @@ export default function LoginPage() {
             Namma Future.
           </h1>
           <p className="mt-3 max-w-md text-lg text-white/85">
-            Our School, Our Future — the modern, WhatsApp-first ERP built for
-            Bangalore schools.
+            Our School, Our Future — the modern, WhatsApp-first ERP connecting
+            admins, teachers, students & parents.
           </p>
 
           <div className="mt-8 space-y-3">
@@ -59,7 +59,7 @@ export default function LoginPage() {
             />
             <Feature
               icon={<GraduationCap size={20} />}
-              text="Parents always in the loop"
+              text="One login for every role"
             />
           </div>
         </div>

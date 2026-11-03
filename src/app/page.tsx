@@ -42,8 +42,9 @@ export default function HomePage() {
           </span>
         </h1>
         <p className="mx-auto mt-5 max-w-2xl text-lg text-slate-600">
-          The modern, WhatsApp-first School ERP — attendance, fees, and report
-          cards that parents actually love.{" "}
+          One platform for your whole school — admins, teachers, students &
+          parents. Attendance, fees, and report cards, the modern WhatsApp-first
+          way.{" "}
           <span className="font-semibold text-slate-800">
             ನಮ್ಮ ಶಾಲೆ, ನಮ್ಮ ಭವಿಷ್ಯ.
           </span>
@@ -84,14 +85,14 @@ export default function HomePage() {
         <FeatureCard
           icon={<MessageCircle />}
           title="WhatsApp-first"
-          desc="Report cards & receipts delivered where parents already are."
+          desc="Report cards & receipts shared instantly on WhatsApp."
           color="text-malnad"
           bg="bg-green-50"
         />
         <FeatureCard
           icon={<GraduationCap />}
-          title="Parent Portal"
-          desc="Attendance, fees & progress — always in the loop."
+          title="For Everyone"
+          desc="Role-based access for admins, teachers, students & parents."
           color="text-kesari"
           bg="bg-kesari-50"
         />
