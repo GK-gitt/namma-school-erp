@@ -35,13 +35,13 @@ export default function LoginPage() {
 
         <div className="relative">
           <h1 className="text-4xl font-extrabold leading-tight">
-            Namma Shaale,
+            Bringing Every School
             <br />
-            Namma Future.
+            Operation Together.
           </h1>
           <p className="mt-3 max-w-md text-lg text-white/85">
-            Our School, Our Future — the modern, WhatsApp-first ERP connecting
-            admins, teachers, students & parents.
+            One beautiful platform connecting admins, teachers, students &
+            parents — Namma Shaale, Namma Future.
           </p>
 
           <div className="mt-8 space-y-3">

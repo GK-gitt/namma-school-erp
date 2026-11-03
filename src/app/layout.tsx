@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Namma School ERP — Namma Shaale, Namma Future",
+  title: "Namma School ERP — Bringing Every School Operation Together",
   description:
-    "The modern, WhatsApp-first School ERP for Bangalore schools. Attendance, fees, and report cards parents love.",
+    "One beautiful platform for Bangalore schools — attendance, fees, report cards and more, all in one place. Namma Shaale, Namma Future.",
 };
 
 export default function RootLayout({
