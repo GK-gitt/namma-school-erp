@@ -34,18 +34,20 @@ export default function HomePage() {
         <div className="mb-5 inline-flex items-center gap-2 rounded-full bg-white px-4 py-1.5 text-sm font-semibold text-kesari shadow-sm ring-1 ring-kesari/10">
           🧡 Built for Bengaluru schools
         </div>
-        <h1 className="text-4xl font-extrabold leading-tight tracking-tight text-slate-900 sm:text-5xl">
-          One source of truth
+        <h1 className="text-5xl font-extrabold leading-tight tracking-tight text-slate-900 sm:text-6xl">
+          Namma Shaale,
           <br />
-          for the{" "}
           <span className="bg-kannada-gradient bg-clip-text text-transparent">
-            entire school.
+            Namma Future.
           </span>
         </h1>
-        <p className="mx-auto mt-5 max-w-2xl text-lg text-slate-600">
+        <p className="mx-auto mt-4 text-xl font-semibold text-slate-800">
+          One source of truth for the entire school.
+        </p>
+        <p className="mx-auto mt-3 max-w-2xl text-lg text-slate-600">
           One beautiful platform for admins, teachers, students & parents —
           attendance, fees, and report cards, all in one place.{" "}
-          <span className="font-semibold text-slate-800">
+          <span className="font-semibold text-slate-700">
             ನಮ್ಮ ಶಾಲೆ, ನಮ್ಮ ಭವಿಷ್ಯ.
           </span>
         </p>

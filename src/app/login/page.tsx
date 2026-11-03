@@ -35,13 +35,16 @@ export default function LoginPage() {
 
         <div className="relative">
           <h1 className="text-4xl font-extrabold leading-tight">
-            One source of truth
+            Namma Shaale,
             <br />
-            for the entire school.
+            Namma Future.
           </h1>
-          <p className="mt-3 max-w-md text-lg text-white/85">
+          <p className="mt-2 text-xl font-semibold text-white/90">
+            One source of truth for the entire school.
+          </p>
+          <p className="mt-3 max-w-md text-base text-white/80">
             One beautiful platform connecting admins, teachers, students &
-            parents — Namma Shaale, Namma Future.
+            parents.
           </p>
 
           <div className="mt-8 space-y-3">
