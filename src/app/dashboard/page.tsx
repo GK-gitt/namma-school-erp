@@ -2,6 +2,7 @@
 import { requireUser } from "@/lib/rbac";
 import { prisma } from "@/lib/prisma";
 import { PageTitle, StatCard, Card } from "@/components/ui";
+import { formatINR, startOfToday } from "@/lib/format";
 
 export default async function DashboardPage() {
   const user = await requireUser();
@@ -97,18 +98,4 @@ export default async function DashboardPage() {
       </div>
     </>
   );
-}
-
-function startOfToday() {
-  const d = new Date();
-  d.setHours(0, 0, 0, 0);
-  return d;
-}
-
-export function formatINR(n: number) {
-  return new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: 0,
-  }).format(n);
 }

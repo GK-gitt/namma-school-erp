@@ -1,22 +1,20 @@
 // ───────────────────────────────────────────────────────────────
-// Authentication configuration (Auth.js / NextAuth v5).
+// Full authentication setup (Node.js runtime).
 //
-// This handles: "who is logging in, is their password correct, and what
-// role do they have?" Passwords are checked against the HASHED version in
-// the DB using bcrypt — we never compare plain text.
+// This takes the Edge-safe shared config (auth.config.ts) and adds the
+// Credentials provider, which checks the password with bcrypt against the
+// hashed value in the database via Prisma. Because bcrypt + Prisma need
+// Node.js APIs, this file is only used on the server runtime — never the Edge.
 // ───────────────────────────────────────────────────────────────
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { loginSchema } from "@/lib/validation";
-import type { Role } from "@prisma/client";
+import { authConfig } from "@/lib/auth.config";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  session: { strategy: "jwt" },
-  pages: {
-    signIn: "/login",
-  },
+  ...authConfig,
   providers: [
     Credentials({
       credentials: {
@@ -48,22 +46,4 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
     }),
   ],
-  callbacks: {
-    // Put the role + id into the token so we can check them cheaply later.
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id as string;
-        token.role = (user as { role: Role }).role;
-      }
-      return token;
-    },
-    // Expose role + id on the session object used throughout the app.
-    async session({ session, token }) {
-      if (session.user) {
-        session.user.id = token.id as string;
-        session.user.role = token.role as Role;
-      }
-      return session;
-    },
-  },
 });
