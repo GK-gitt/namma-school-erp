@@ -471,19 +471,36 @@ function Header({ name, subtitle }: { name: string; subtitle: string }) {
 }
 
 async function buildAttendanceTrend(schoolId: string) {
+  // ONE query for the whole 7-day window (was 7 sequential queries = slow).
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+  start.setDate(start.getDate() - 6);
+
+  const rows = await prisma.attendance.findMany({
+    where: { schoolId, status: "PRESENT", date: { gte: start } },
+    select: { date: true },
+  });
+
+  const buckets = new Map<string, number>();
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() - i);
+    buckets.set(d.toDateString(), 0);
+  }
+  for (const r of rows) {
+    const key = new Date(r.date).toDateString();
+    if (buckets.has(key)) buckets.set(key, (buckets.get(key) ?? 0) + 1);
+  }
+
   const days: { day: string; present: number }[] = [];
   for (let i = 6; i >= 0; i--) {
     const d = new Date();
     d.setHours(0, 0, 0, 0);
     d.setDate(d.getDate() - i);
-    const next = new Date(d);
-    next.setDate(next.getDate() + 1);
-    const present = await prisma.attendance.count({
-      where: { schoolId, status: "PRESENT", date: { gte: d, lt: next } },
-    });
     days.push({
       day: d.toLocaleDateString("en-IN", { weekday: "short" }),
-      present,
+      present: buckets.get(d.toDateString()) ?? 0,
     });
   }
   return days;

@@ -163,6 +163,8 @@ model Student {
   // Admission number unique WITHIN a school.
   @@unique([schoolId, admissionNo])
   @@index([schoolId])
+  // Hot path: list/roster queries filter by class within a school.
+  @@index([schoolId, classId])
 }
 
 // ── ATTENDANCE ─────────────────────────────────────────────────
@@ -187,6 +189,8 @@ model Attendance {
 
   @@unique([studentId, date])
   @@index([schoolId])
+  // Hot path: dashboard counts present students by school + date.
+  @@index([schoolId, status, date])
 }
 
 // ── FEE STRUCTURE ──────────────────────────────────────────────
